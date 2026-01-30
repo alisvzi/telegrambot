@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 module.exports = async (req, res) => {
   const url = `${process.env.APP_URL}/api/webhook`;
 
