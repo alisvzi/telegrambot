@@ -16,34 +16,22 @@ app.use(express.json());
 const hookPath = `/webhook/${TOKEN}`;
 const webhookUrl = `${APP_URL}${hookPath}`;
 
-const bot = new TelegramBot(TOKEN);
+const bot = new TelegramBot(TOKEN, { webHook: true });
 
-// تنظیم Webhook فقط یک بار
-let webhookSet = false;
-
-const setupWebhook = async () => {
-  if (!webhookSet) {
-    try {
-      await bot.setWebHook(webhookUrl);
-      console.log("✅ Webhook ست شد:", webhookUrl);
-      webhookSet = true;
-    } catch (err) {
-      console.error("❌ خطا در setWebHook:", err);
-    }
-  }
-};
-
-setupWebhook();
-
-app.post(hookPath, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
+bot
+  .setWebHook(webhookUrl)
+  .then(() => console.log("✅ Webhook ست شد:", webhookUrl))
+  .catch((err) => console.error("❌ خطا در setWebHook:", err));
 
 // داده‌ها
 const userGroups = {};
 const cheats = {};
 const userPendingCheat = {};
+
+app.post(hookPath, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
 
 // /start
 bot.onText(/\/start/, (msg) => {
@@ -158,6 +146,7 @@ bot.on("callback_query", (callbackQuery) => {
     return;
   }
 
+  // callback های قبلی
   if (data === "rand") {
     bot.sendMessage(
       chatId,
@@ -238,6 +227,7 @@ bot.onText(/\/rand (\d+) (\d+)/, (msg, match) => {
 
   if (cheats.hasOwnProperty(chatId)) {
     const cheatNumber = cheats[chatId];
+    // عدد تقلب را بدون هیچ اشاره‌ای ارسال می‌کنیم
     bot.sendMessage(
       chatId,
       `🎲 عدد رندم بین ${a} و ${b}:\n\n\n👉 ${cheatNumber}`
