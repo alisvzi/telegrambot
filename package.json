@@ -1,9 +1,18 @@
 {
-  "name": "telegram-random-bot",
+  "name": "randomnembergenarator",
   "version": "1.0.0",
-  "type": "commonjs",
+  "main": "api/webhook/[token].js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo \"Vercel handles build\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "express": "^4.18.2",
+    "@vercel/kv": "^1.1.0",
     "node-telegram-bot-api": "^0.66.0"
   }
 }

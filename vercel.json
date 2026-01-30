@@ -1,19 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/webhook/[token].js": {
+      "runtime": "nodejs20.x",
+      "memory": 256,
+      "maxDuration": 10
     }
-  ],
-  "routes": [
-    {
-      "src": "/webhook/(.*)",
-      "dest": "/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.js"
-    }
-  ]
+  },
+  "rewrites": [{ "source": "/healthz", "destination": "/api/healthz" }]
 }
