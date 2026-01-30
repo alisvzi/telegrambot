@@ -1,11 +1,7 @@
 {
-  "version": 2,
   "functions": {
-    "api/webhook/[token].js": {
-      "runtime": "nodejs20.x",
-      "memory": 256,
+    "api/*.js": {
       "maxDuration": 10
     }
-  },
-  "rewrites": [{ "source": "/healthz", "destination": "/api/healthz" }]
+  }
 }
