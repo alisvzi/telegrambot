@@ -16,29 +16,17 @@ app.use(express.json());
 const hookPath = `/webhook/${TOKEN}`;
 const webhookUrl = `${APP_URL}${hookPath}`;
 
-const bot = new TelegramBot(TOKEN);
+const bot = new TelegramBot(TOKEN, { webHook: true });
 
-// داده‌ها - در محیط production باید از دیتابیس استفاده شود
+bot
+  .setWebHook(webhookUrl)
+  .then(() => console.log("✅ Webhook ست شد:", webhookUrl))
+  .catch((err) => console.error("❌ خطا در setWebHook:", err));
+
+// داده‌ها
 const userGroups = {};
 const cheats = {};
 const userPendingCheat = {};
-
-// تنظیم Webhook فقط یک بار
-let webhookSet = false;
-
-const setupWebhook = async () => {
-  if (!webhookSet) {
-    try {
-      await bot.setWebHook(webhookUrl);
-      console.log("✅ Webhook ست شد:", webhookUrl);
-      webhookSet = true;
-    } catch (err) {
-      console.error("❌ خطا در setWebHook:", err);
-    }
-  }
-};
-
-setupWebhook();
 
 app.post(hookPath, (req, res) => {
   bot.processUpdate(req.body);
@@ -80,7 +68,7 @@ bot.onText(/\/start/, (msg) => {
   bot.sendMessage(
     chatId,
     "برای استفاده راحت‌تر می‌توانید از دکمه‌های زیر هم استفاده کنید:",
-    keyboardOptions,
+    keyboardOptions
   );
 });
 
@@ -92,7 +80,7 @@ bot.onText(/\/register/, (msg) => {
   if (!msg.chat.type.endsWith("group")) {
     return bot.sendMessage(
       chatId,
-      "❌ این دستور فقط باید در گروه‌ها استفاده شود.",
+      "❌ این دستور فقط باید در گروه‌ها استفاده شود."
     );
   }
 
@@ -101,7 +89,7 @@ bot.onText(/\/register/, (msg) => {
 
   bot.sendMessage(
     chatId,
-    `${msg.from.first_name} عزیز، گروه "${userGroups[userId][chatId]}" برای شما ثبت شد.\n\nحالا در پیام خصوصی با ربات دستور /mygroups را بزنید.`,
+    `${msg.from.first_name} عزیز، گروه "${userGroups[userId][chatId]}" برای شما ثبت شد.\n\nحالا در پیام خصوصی با ربات دستور /mygroups را بزنید.`
   );
 });
 
@@ -115,7 +103,7 @@ bot.onText(/\/mygroups/, (msg) => {
   if (!userGroups[userId] || Object.keys(userGroups[userId]).length === 0) {
     return bot.sendMessage(
       chatId,
-      "❌ شما هنوز هیچ گروهی ثبت نکرده‌اید.\nلطفا ابتدا در گروه مورد نظر دستور /register را ارسال کنید.",
+      "❌ شما هنوز هیچ گروهی ثبت نکرده‌اید.\nلطفا ابتدا در گروه مورد نظر دستور /register را ارسال کنید."
     );
   }
 
@@ -141,7 +129,7 @@ bot.on("callback_query", (callbackQuery) => {
     if (userPendingCheat[userId] === undefined) {
       bot.sendMessage(
         chatId,
-        `گروه "${userGroups[userId][groupId]}" انتخاب شد.`,
+        `گروه "${userGroups[userId][groupId]}" انتخاب شد.`
       );
       bot.answerCallbackQuery(callbackQuery.id);
       return;
@@ -152,21 +140,22 @@ bot.on("callback_query", (callbackQuery) => {
 
     bot.sendMessage(
       chatId,
-      `✅ عدد تقلب برای گروه "${userGroups[userId][groupId]}" با موفقیت ثبت شد.`,
+      `✅ عدد تقلب برای گروه "${userGroups[userId][groupId]}" با موفقیت ثبت شد.`
     );
     bot.answerCallbackQuery(callbackQuery.id);
     return;
   }
 
+  // callback های قبلی
   if (data === "rand") {
     bot.sendMessage(
       chatId,
-      "لطفا دستور /rand را به شکل /rand [عدد1] [عدد2] وارد کنید.",
+      "لطفا دستور /rand را به شکل /rand [عدد1] [عدد2] وارد کنید."
     );
   } else if (data === "about") {
     bot.sendMessage(
       chatId,
-      "این ربات به شما کمک می‌کند عدد رندم بین دو عدد مشخص تولید کنید.\nساخته شده توسط @alisvzi",
+      "این ربات به شما کمک می‌کند عدد رندم بین دو عدد مشخص تولید کنید.\nساخته شده توسط @alisvzi"
     );
   } else if (data === "help") {
     bot.sendMessage(
@@ -174,7 +163,7 @@ bot.on("callback_query", (callbackQuery) => {
       `راهنما:
 - /start : شروع کار با ربات
 - /rand عدد1 عدد2 : تولید عدد رندم بین عدد1 و عدد2
-- /help : نمایش راهنما`,
+- /help : نمایش راهنما`
     );
   }
 
@@ -191,14 +180,14 @@ bot.onText(/\/cheat (\d+)/, (msg, match) => {
   if (isNaN(cheatNumber)) {
     return bot.sendMessage(
       chatId,
-      "❌ عدد تقلب نامعتبر است. لطفا عدد صحیح وارد کنید.",
+      "❌ عدد تقلب نامعتبر است. لطفا عدد صحیح وارد کنید."
     );
   }
 
   if (!userGroups[userId] || Object.keys(userGroups[userId]).length === 0) {
     return bot.sendMessage(
       chatId,
-      "❌ شما هنوز هیچ گروهی ثبت نکرده‌اید.\nلطفا ابتدا در گروه مورد نظر دستور /register را ارسال کنید.",
+      "❌ شما هنوز هیچ گروهی ثبت نکرده‌اید.\nلطفا ابتدا در گروه مورد نظر دستور /register را ارسال کنید."
     );
   }
 
@@ -214,7 +203,7 @@ bot.onText(/\/cheat (\d+)/, (msg, match) => {
     "عدد تقلب ثبت شد.\nلطفا گروه مورد نظر برای اعمال عدد تقلب را انتخاب کنید:",
     {
       reply_markup: { inline_keyboard: inlineKeyboard },
-    },
+    }
   );
 });
 
@@ -230,7 +219,7 @@ bot.onText(/\/rand (\d+) (\d+)/, (msg, match) => {
   if (a === b) {
     return bot.sendMessage(
       chatId,
-      "⚠️ دو عدد نمی‌توانند برابر باشند. لطفا دو عدد متفاوت وارد کنید.",
+      "⚠️ دو عدد نمی‌توانند برابر باشند. لطفا دو عدد متفاوت وارد کنید."
     );
   }
 
@@ -238,9 +227,10 @@ bot.onText(/\/rand (\d+) (\d+)/, (msg, match) => {
 
   if (cheats.hasOwnProperty(chatId)) {
     const cheatNumber = cheats[chatId];
+    // عدد تقلب را بدون هیچ اشاره‌ای ارسال می‌کنیم
     bot.sendMessage(
       chatId,
-      `🎲 عدد رندم بین ${a} و ${b}:\n\n\n👉 ${cheatNumber}`,
+      `🎲 عدد رندم بین ${a} و ${b}:\n\n\n👉 ${cheatNumber}`
     );
     delete cheats[chatId];
   } else {
@@ -263,16 +253,6 @@ bot.onText(/\/help/, (msg) => {
   bot.sendMessage(chatId, helpMessage);
 });
 
-app.get("/", (req, res) => {
-  res.send("Bot is running! ✅");
-});
-
 app.get("/healthz", (req, res) => res.send("ok"));
 
-// Export برای Vercel
-module.exports = app;
-
-// اجرای سرور فقط در محیط development
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => console.log(`✅ Server listening on port ${PORT}`));
-}
+app.listen(PORT, () => console.log(`✅ Server listening on port ${PORT}`));
