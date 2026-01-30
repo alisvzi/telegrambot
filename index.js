@@ -16,17 +16,29 @@ app.use(express.json());
 const hookPath = `/webhook/${TOKEN}`;
 const webhookUrl = `${APP_URL}${hookPath}`;
 
-const bot = new TelegramBot(TOKEN, { webHook: true });
+const bot = new TelegramBot(TOKEN);
 
-bot
-  .setWebHook(webhookUrl)
-  .then(() => console.log("✅ Webhook ست شد:", webhookUrl))
-  .catch((err) => console.error("❌ خطا در setWebHook:", err));
-
-// داده‌ها
+// داده‌ها - در محیط production باید از دیتابیس استفاده شود
 const userGroups = {};
 const cheats = {};
 const userPendingCheat = {};
+
+// تنظیم Webhook فقط یک بار
+let webhookSet = false;
+
+const setupWebhook = async () => {
+  if (!webhookSet) {
+    try {
+      await bot.setWebHook(webhookUrl);
+      console.log("✅ Webhook ست شد:", webhookUrl);
+      webhookSet = true;
+    } catch (err) {
+      console.error("❌ خطا در setWebHook:", err);
+    }
+  }
+};
+
+setupWebhook();
 
 app.post(hookPath, (req, res) => {
   bot.processUpdate(req.body);
@@ -146,7 +158,6 @@ bot.on("callback_query", (callbackQuery) => {
     return;
   }
 
-  // callback های قبلی
   if (data === "rand") {
     bot.sendMessage(
       chatId,
@@ -227,7 +238,6 @@ bot.onText(/\/rand (\d+) (\d+)/, (msg, match) => {
 
   if (cheats.hasOwnProperty(chatId)) {
     const cheatNumber = cheats[chatId];
-    // عدد تقلب را بدون هیچ اشاره‌ای ارسال می‌کنیم
     bot.sendMessage(
       chatId,
       `🎲 عدد رندم بین ${a} و ${b}:\n\n\n👉 ${cheatNumber}`
@@ -253,6 +263,16 @@ bot.onText(/\/help/, (msg) => {
   bot.sendMessage(chatId, helpMessage);
 });
 
+app.get("/", (req, res) => {
+  res.send("Bot is running! ✅");
+});
+
 app.get("/healthz", (req, res) => res.send("ok"));
 
-app.listen(PORT, () => console.log(`✅ Server listening on port ${PORT}`));
+// Export برای Vercel
+module.exports = app;
+
+// اجرای سرور فقط در محیط development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => console.log(`✅ Server listening on port ${PORT}`));
+}
