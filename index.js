@@ -34,6 +34,8 @@ try {
 const userGroups = {};
 const cheats = {};
 const userPendingCheat = {};
+// لیست ادمین‌ها (آیدی تلگرام خودتان را اینجا وارد کنید)
+const ADMIN_IDS = ["YOUR_TELEGRAM_ID"]; // آیدی عددی خودتان را جایگزین کنید
 
 app.post(hookPath, (req, res) => {
   try {
@@ -83,6 +85,11 @@ bot.onText(/\/start/, (msg) => {
       "برای استفاده راحت‌تر می‌توانید از دکمه‌های زیر هم استفاده کنید:",
       keyboardOptions
     );
+
+    // اگر کاربر ادمین باشد، دستورهای خاص را نمایش بده
+    if (ADMIN_IDS.includes(msg.from.id.toString())) {
+      bot.sendMessage(chatId, "شما ادمین هستید. دستورهای خاص:\n/cheat [عدد]");
+    }
   } catch (error) {
     console.error("❌ خطا در /start:", error);
   }
@@ -188,7 +195,9 @@ bot.on("callback_query", (callbackQuery) => {
         `راهنما:
 - /start : شروع کار با ربات
 - /rand عدد1 عدد2 : تولید عدد رندم بین عدد1 و عدد2
-- /help : نمایش راهنما`
+- /help : نمایش راهنما
+- /mygroups : نمایش گروه‌های ثبت شده شما
+- /register : ثبت گروه (فقط در گروه‌ها)`
       );
     }
 
@@ -198,12 +207,26 @@ bot.on("callback_query", (callbackQuery) => {
   }
 });
 
+// دستور cheat فقط برای ادمین‌ها
 bot.onText(/\/cheat (\d+)/, (msg, match) => {
   try {
-    if (msg.chat.type !== "private") return;
-
-    const userId = msg.from.id;
+    const userId = msg.from.id.toString();
     const chatId = msg.chat.id;
+
+    // بررسی اینکه کاربر ادمین است یا نه
+    if (!ADMIN_IDS.includes(userId)) {
+      return bot.sendMessage(
+        chatId,
+        "❌ شما مجاز به استفاده از این دستور نیستید."
+      );
+    }
+
+    if (msg.chat.type !== "private") {
+      return bot.sendMessage(
+        chatId,
+        "❌ این دستور فقط در پیام خصوصی قابل استفاده است."
+      );
+    }
 
     const cheatNumber = parseInt(match[1]);
     if (isNaN(cheatNumber)) {
@@ -279,15 +302,23 @@ bot.onText(/\/rand (\d+) (\d+)/, (msg, match) => {
 bot.onText(/\/help/, (msg) => {
   try {
     const chatId = msg.chat.id;
-    const helpMessage = `
+    const userId = msg.from.id.toString();
+
+    let helpMessage = `
 دستورات ربات:
 /start - شروع کار با ربات
 /rand [عدد1] [عدد2] - تولید عدد رندم بین دو عدد
 /help - نمایش این پیام راهنما
 /mygroups - نمایش گروه‌های ثبت شده شما
 /register - ثبت گروه (فقط در گروه‌ها)
-
 `;
+
+    // اگر کاربر ادمین باشد، دستورهای خاص را نمایش بده
+    if (ADMIN_IDS.includes(userId)) {
+      helpMessage +=
+        "\nدستورهای ادمین:\n/cheat [عدد] - تنظیم عدد تقلب (فقط در پیام خصوصی)";
+    }
+
     bot.sendMessage(chatId, helpMessage);
   } catch (error) {
     console.error("❌ خطا در /help:", error);
