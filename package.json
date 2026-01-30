@@ -1,17 +1,9 @@
 {
-  "name": "randomnembergenarator",
+  "name": "telegram-random-bot",
   "version": "1.0.0",
-  "main": "randomBot.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "type": "commonjs",
   "dependencies": {
-    "express": "^5.1.0",
-    "node-telegram-bot-api": "^0.66.0"
+    "node-telegram-bot-api": "^0.66.0",
+    "@upstash/redis": "^1.34.0"
   }
 }
