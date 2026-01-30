@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: telegram-random-number-bot
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: APP_URL
+        sync: false

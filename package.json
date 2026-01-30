@@ -1,7 +1,7 @@
 {
   "name": "randomnembergenarator",
   "version": "1.0.0",
-  "main": "randomBot.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
@@ -11,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^4.18.2",
     "node-telegram-bot-api": "^0.66.0"
   }
 }
